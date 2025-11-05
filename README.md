@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📊 Advanced Data Analytics Dashboard
 
 An interactive Streamlit dashboard for automated exploratory data analysis (EDA) with advanced visualizations and insights.
@@ -52,3 +53,7 @@ streamlit run dash1.py
 ## 📝 License
 
 MIT License
+=======
+# Pact-Data-Dashboard
+Automated Analytics
+>>>>>>> e73425ac784c055e6a709820035b8cb3fc065d4d
