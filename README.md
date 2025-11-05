@@ -1,2 +1,2 @@
 # Pact-Data-Dashboard
-utomated Analytics
+Automated Analytics
