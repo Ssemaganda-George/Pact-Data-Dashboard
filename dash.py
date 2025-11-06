@@ -163,7 +163,7 @@ for col in df.columns:
         except Exception:
             continue
 
-# Handle missing values intelligently
+# Handle missing values
 with st.expander("Missing Values Handling"):
     missing_summary = df.isna().sum()
     missing_cols = missing_summary[missing_summary > 0]
@@ -180,10 +180,7 @@ with st.expander("Missing Values Handling"):
             if st.button("Apply Missing Value Handling"):
                 with st.spinner("Processing missing values..."):
                     for col in selected_cols:
-                        method = st.session_state[f"method_{col}"]  # Retrieve from session state if needed, but since immediate, use variable
-                        # Note: To make it work, we need to store methods. For simplicity, re-evaluate inside button.
-                        # Actually, since button reruns, better to process inside button.
-                        # Wait, in Streamlit, selects are preserved, but to avoid re-processing, wrap logic.
+                        method = st.session_state[f"method_{col}"]  
                         if method != "None":
                             if method == "Custom Value":
                                 custom_val = st.session_state[f"custom_{col}"]
@@ -473,7 +470,7 @@ with st.expander("Visual Explorations"):
                 for feature in features:
                     try:
                         contingency_table = pd.crosstab(df[target], df[feature])
-                        if contingency_table.size > 1:  # Ensure table has enough data
+                        if contingency_table.size > 1:  
                             chi2, p, dof, expected = stats.chi2_contingency(contingency_table)
                             results.append({
                                 "Feature": feature,
