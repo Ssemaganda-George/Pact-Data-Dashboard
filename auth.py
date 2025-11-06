@@ -1,6 +1,7 @@
 import streamlit as st
 from supabase import create_client
 from config import IS_LOCAL, LOCAL_URL, LOCAL_KEY, REMOTE_URL, REMOTE_KEY
+import time
 
 # Supabase setup
 if IS_LOCAL:
@@ -11,6 +12,23 @@ else:
     key = REMOTE_KEY
 
 supabase = create_client(url, key)
+
+# Session timeout in seconds (30 minutes)
+SESSION_TIMEOUT = 30 * 60
+
+def check_session_timeout():
+    """Check if the user session has timed out"""
+    if "last_activity" in st.session_state:
+        time_since_activity = time.time() - st.session_state["last_activity"]
+        if time_since_activity > SESSION_TIMEOUT:
+            st.warning("⏰ Your session has expired due to inactivity. Please log in again.")
+            logout()
+            return True
+    return False
+
+def update_activity():
+    """Update the last activity timestamp"""
+    st.session_state["last_activity"] = time.time()
 
 def auth():
     st.title("PACT EDA Dashboard Authentication")
@@ -66,6 +84,7 @@ def auth():
                     st.session_state["original_shape"] = None
                     st.session_state["original_missing"] = None
                     st.session_state["original_numeric"] = None
+                    update_activity()  # Set initial activity timestamp
                     st.success("Logged in successfully!")
                     st.rerun()
                 else:
@@ -73,6 +92,24 @@ def auth():
             except Exception as e:
                 st.error(f"Connection error: {e}. Please check your Supabase setup.")
 
+def logout():
+    """Handle user logout by clearing session state"""
+    # Clear all authentication-related session state
+    keys_to_clear = ["logged_in", "username", "email", "df", "original_df", 
+                     "original_shape", "original_missing", "original_numeric", 
+                     "auth_mode", "last_activity", "show_logout_confirm"]
+    
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+    
+    st.success("Logged out successfully!")
+    st.rerun()
+
 if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
     auth()
     st.stop()
+else:
+    # Check for session timeout if user is logged in
+    if check_session_timeout():
+        st.stop()

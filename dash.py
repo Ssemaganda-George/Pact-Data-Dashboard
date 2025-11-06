@@ -7,12 +7,19 @@ import plotly.express as px
 import plotly.graph_objects as go
 import scipy.stats as stats
 import pickle
-from auth import auth
+from auth import auth, logout, check_session_timeout, update_activity
 
 # Check auth
 if "logged_in" not in st.session_state or not st.session_state["logged_in"]:
     auth()
     st.stop()
+
+# Check for session timeout
+if check_session_timeout():
+    st.stop()
+
+# Update activity timestamp
+update_activity()
 
 # Main app for logged-in users
 username = st.session_state["username"]
@@ -24,6 +31,45 @@ st.set_page_config(page_title="📊 Smart Auto EDA Dashboard", layout="wide")
 
 st.title("PACT Automated EDA & Interactive Dashboard")
 st.caption("Upload any dataset (CSV/Excel) and instantly explore insights, missing data, correlations, and visual trends.")
+
+# -----------------------------
+# SIDEBAR USER INFO AND LOGOUT
+# -----------------------------
+st.sidebar.header(f"👋 Welcome, {username}!")
+st.sidebar.write(f"Email: {st.session_state['email']}")
+
+# Session timeout indicator
+if "last_activity" in st.session_state:
+    import time
+    time_since_activity = time.time() - st.session_state["last_activity"]
+    remaining_time = (30 * 60) - time_since_activity  # 30 minutes timeout
+    if remaining_time > 0:
+        minutes_left = int(remaining_time // 60)
+        st.sidebar.caption(f"⏱️ Session expires in: {minutes_left} minutes")
+    else:
+        st.sidebar.caption("⏱️ Session expired")
+
+# Logout button with confirmation
+if st.sidebar.button("🚪 Logout", type="primary"):
+    # Use a modal-like approach with session state for confirmation
+    st.session_state["show_logout_confirm"] = True
+
+# Show logout confirmation if requested
+if st.session_state.get("show_logout_confirm", False):
+    st.sidebar.warning("⚠️ Are you sure you want to logout?")
+    col1, col2 = st.sidebar.columns(2)
+    
+    with col1:
+        if st.button("✅ Yes", key="confirm_logout"):
+            st.session_state["show_logout_confirm"] = False
+            logout()
+    
+    with col2:
+        if st.button("❌ No", key="cancel_logout"):
+            st.session_state["show_logout_confirm"] = False
+            st.rerun()
+
+st.sidebar.markdown("---")  # Separator line
 
 # -----------------------------
 # LOAD DATA
