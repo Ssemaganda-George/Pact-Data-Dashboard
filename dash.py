@@ -27,34 +27,23 @@ username = st.session_state["username"]
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
-st.set_page_config(page_title="📊 Smart Auto EDA Dashboard", layout="wide")
+st.set_page_config(page_title="Smart Auto EDA Dashboard", layout="wide")
 
-st.title("PACT Automated EDA & Interactive Dashboard")
-st.caption("Upload any dataset (CSV/Excel) and instantly explore insights, missing data, correlations, and visual trends.")
+st.title("PACT Automated EDA Dashboard")
 
 # -----------------------------
-# SIDEBAR USER INFO AND LOGOUT
+# SIDEBAR USER INFO AND DROPDOWN
 # -----------------------------
-st.sidebar.header(f"Welcome, {username}.")
-# st.sidebar.write(f"Email: {st.session_state['email']}")
+# User dropdown with expandable menu
+with st.sidebar.expander(f"{username} ", expanded=False):
+    # Account info section
+    st.write(f"**Email:** {st.session_state['email']}")
+    
+    # Logout button
+    if st.button("Logout", key="logout_button", use_container_width=True):
+        st.session_state["show_logout_confirm"] = True
 
-# Session timeout indicator
-if "last_activity" in st.session_state:
-    import time
-    time_since_activity = time.time() - st.session_state["last_activity"]
-    remaining_time = (30 * 60) - time_since_activity  # 30 minutes timeout
-    if remaining_time > 0:
-        minutes_left = int(remaining_time // 60)
-        st.sidebar.caption(f"Session expires in: {minutes_left} minutes")
-    else:
-        st.sidebar.caption("Session expired")
-
-# Logout button with confirmation
-if st.sidebar.button("Logout", type="primary"):
-    # Use a modal-like approach with session state for confirmation
-    st.session_state["show_logout_confirm"] = True
-
-# Show logout confirmation if requested
+# Show logout confirmation in sidebar if requested
 if st.session_state.get("show_logout_confirm", False):
     st.sidebar.warning("Are you sure you want to logout?")
     col1, col2 = st.sidebar.columns(2)
@@ -65,9 +54,20 @@ if st.session_state.get("show_logout_confirm", False):
             logout()
     
     with col2:
-        if st.button("❌ No", key="cancel_logout"):
+        if st.button("❌ Cancel", key="cancel_logout"):
             st.session_state["show_logout_confirm"] = False
             st.rerun()
+
+# Session timeout indicator
+if "last_activity" in st.session_state:
+    import time
+    time_since_activity = time.time() - st.session_state["last_activity"]
+    remaining_time = (30 * 60) - time_since_activity  # 30 minutes timeout
+    if remaining_time > 0:
+        minutes_left = int(remaining_time // 60)
+        st.sidebar.caption(f"Session expires in: {minutes_left} minutes")
+    else:
+        st.sidebar.warning("Session expired")
 
 st.sidebar.markdown("---")  # Separator line
 
@@ -122,33 +122,6 @@ if st.sidebar.button("Reset to Original Data"):
     categorical_cols = df.select_dtypes(exclude=['number', 'datetime']).columns.tolist()
     date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
     st.rerun()
-
-# Session Management
-st.sidebar.header("💾 Session Management")
-session_name = st.sidebar.text_input("Session Name")
-if st.sidebar.button("Save Session"):
-    if session_name:
-        user_sessions_dir = f"sessions/{username}"
-        os.makedirs(user_sessions_dir, exist_ok=True)
-        with open(f"{user_sessions_dir}/{session_name}.pkl", "wb") as f:
-            pickle.dump(df, f)
-        st.sidebar.success(f"Session '{session_name}' saved.")
-    else:
-        st.sidebar.error("Enter a session name.")
-
-saved_sessions = [f.replace(".pkl", "") for f in os.listdir(f"sessions/{username}") if f.endswith(".pkl")] if os.path.exists(f"sessions/{username}") else []
-if saved_sessions:
-    load_session = st.sidebar.selectbox("Load Session", ["None"] + saved_sessions)
-    if load_session != "None" and st.sidebar.button("Load Selected Session"):
-        with open(f"sessions/{username}/{load_session}.pkl", "rb") as f:
-            st.session_state["df"] = pickle.load(f)
-        df = st.session_state["df"]
-        st.sidebar.success(f"Session '{load_session}' loaded.")
-        # Re-identify column types
-        numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-        categorical_cols = df.select_dtypes(exclude=['number', 'datetime']).columns.tolist()
-        date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
-        st.rerun()
 
 # -----------------------------
 # DATA CLEANING & CONVERSION
@@ -234,7 +207,7 @@ date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
 # -----------------------------
 # DATA OVERVIEW
 # -----------------------------
-st.markdown("## 📋 Dataset Overview")
+st.markdown("Dataset Overview")
 
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Rows", f"{df.shape[0]:,}")
@@ -377,7 +350,7 @@ with st.expander("Visual Explorations"):
                 fig = px.imshow(corr, 
                                text_auto=show_values, 
                                aspect="auto", 
-                               title="📊 Enhanced Correlation Heatmap",
+                               title="Enhanced Correlation Heatmap",
                                color_continuous_scale=color_scale,
                                zmin=-1, zmax=1)
                 fig.update_layout(width=800, height=600)
@@ -413,7 +386,7 @@ with st.expander("Visual Explorations"):
                     
                     fig = px.imshow(normalized_data.T, 
                                   aspect="auto",
-                                  title="📈 Normalized Data Distribution Heatmap",
+                                  title="Normalized Data Distribution Heatmap",
                                   color_continuous_scale='viridis')
                     fig.update_layout(
                         xaxis_title="Row Index",
@@ -446,7 +419,7 @@ with st.expander("Visual Explorations"):
                     fig = px.imshow(pivot_table, 
                                   text_auto=True,
                                   aspect="auto",
-                                  title=f"📊 Pivot Heatmap: {pivot_values} by {pivot_index} vs {pivot_columns}",
+                                  title=f"Pivot Heatmap: {pivot_values} by {pivot_index} vs {pivot_columns}",
                                   color_continuous_scale='blues')
                     fig.update_layout(
                         xaxis_title=pivot_columns,
@@ -461,7 +434,7 @@ with st.expander("Visual Explorations"):
         
     with tab6:
         if len(categorical_cols) > 1:
-            st.subheader("📊 Chi-Square Tests for Categorical Variables")
+            st.subheader("Chi-Square Tests for Categorical Variables")
             target = st.selectbox("Select Target Variable (Categorical):", categorical_cols)
             features = st.multiselect("Select Features (Categorical):", [c for c in categorical_cols if c != target], default=[])
             
@@ -504,7 +477,7 @@ with st.expander("Visual Explorations"):
 # -----------------------------
 # DATA CLEANING SUMMARY
 # -----------------------------
-st.markdown("## 📊 Data Cleaning Summary")
+st.markdown("Data Cleaning Summary")
 st.write(f"**Original Rows:** {original_shape[0]:,}, **Current Rows:** {df.shape[0]:,}")
 st.write(f"**Original Columns:** {original_shape[1]:,}, **Current Columns:** {df.shape[1]:,}")
 st.write(f"**Original Missing Values:** {original_missing:,}, **Current Missing Values:** {df.isna().sum().sum():,}")
@@ -514,11 +487,11 @@ st.info("Note: Manual type conversions and missing value handling may have alter
 # -----------------------------
 # DOWNLOAD CLEANED DATA
 # -----------------------------
-st.markdown("## 💾 Export Cleaned Data")
+st.markdown(" Export Cleaned Data")
 csv = df.to_csv(index=False).encode('utf-8')
 st.download_button("⬇ Download Cleaned Dataset", csv, "cleaned_data.csv", "text/csv")
 
-st.success("✅ Auto EDA complete! Explore, visualize, and export your insights.")
+st.success("Auto EDA complete! Explore, visualize, and export your insights.")
 
 # Persist changes to session state
 st.session_state["df"] = df
