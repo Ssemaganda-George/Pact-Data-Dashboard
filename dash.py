@@ -35,8 +35,8 @@ st.caption("Upload any dataset (CSV/Excel) and instantly explore insights, missi
 # -----------------------------
 # SIDEBAR USER INFO AND LOGOUT
 # -----------------------------
-st.sidebar.header(f"👋 Welcome, {username}!")
-st.sidebar.write(f"Email: {st.session_state['email']}")
+st.sidebar.header(f"Welcome, {username}.")
+# st.sidebar.write(f"Email: {st.session_state['email']}")
 
 # Session timeout indicator
 if "last_activity" in st.session_state:
@@ -45,18 +45,18 @@ if "last_activity" in st.session_state:
     remaining_time = (30 * 60) - time_since_activity  # 30 minutes timeout
     if remaining_time > 0:
         minutes_left = int(remaining_time // 60)
-        st.sidebar.caption(f"⏱️ Session expires in: {minutes_left} minutes")
+        st.sidebar.caption(f"Session expires in: {minutes_left} minutes")
     else:
-        st.sidebar.caption("⏱️ Session expired")
+        st.sidebar.caption("Session expired")
 
 # Logout button with confirmation
-if st.sidebar.button("🚪 Logout", type="primary"):
+if st.sidebar.button("Logout", type="primary"):
     # Use a modal-like approach with session state for confirmation
     st.session_state["show_logout_confirm"] = True
 
 # Show logout confirmation if requested
 if st.session_state.get("show_logout_confirm", False):
-    st.sidebar.warning("⚠️ Are you sure you want to logout?")
+    st.sidebar.warning("Are you sure you want to logout?")
     col1, col2 = st.sidebar.columns(2)
     
     with col1:
@@ -74,7 +74,7 @@ st.sidebar.markdown("---")  # Separator line
 # -----------------------------
 # LOAD DATA
 # -----------------------------
-st.sidebar.header("📂 Upload or Load Dataset")
+st.sidebar.header("Upload or Load Dataset")
 uploaded_file = st.sidebar.file_uploader("Upload CSV or Excel file", type=["csv", "xlsx", "xls"])
 
 def load_data(uploaded_file):
@@ -104,7 +104,7 @@ else:
     df = st.session_state["df"]
 
 if df is None:
-    st.info("📥 Please upload a dataset to continue.")
+    st.info("Upload a dataset to continue.")
     st.stop()
 
 original_df = st.session_state["original_df"]
