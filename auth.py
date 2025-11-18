@@ -21,7 +21,7 @@ def check_session_timeout():
     if "last_activity" in st.session_state:
         time_since_activity = time.time() - st.session_state["last_activity"]
         if time_since_activity > SESSION_TIMEOUT:
-            st.warning("⏰ Your session has expired due to inactivity. Please log in again.")
+            st.warning("Your session has expired due to inactivity. Please log in again.")
             logout()
             return True
     return False
@@ -31,7 +31,7 @@ def update_activity():
     st.session_state["last_activity"] = time.time()
 
 def auth():
-    st.title("PACT EDA Dashboard Authentication")
+    st.title("Welcome to PACT Data Dashboard")
     
     # Buttons for mode selection
     col1, col2 = st.columns(2)
