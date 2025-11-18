@@ -29,7 +29,7 @@ username = st.session_state["username"]
 # -----------------------------
 st.set_page_config(page_title="Smart Auto EDA Dashboard", layout="wide")
 
-st.title("PACT Automated EDA Dashboard")
+st.title("PACT DATA EDA Dashboard")
 
 # -----------------------------
 # SIDEBAR USER INFO AND DROPDOWN
@@ -49,12 +49,12 @@ if st.session_state.get("show_logout_confirm", False):
     col1, col2 = st.sidebar.columns(2)
     
     with col1:
-        if st.button("✅ Yes", key="confirm_logout"):
+        if st.button("Yes", key="confirm_logout"):
             st.session_state["show_logout_confirm"] = False
             logout()
     
     with col2:
-        if st.button("❌ Cancel", key="cancel_logout"):
+        if st.button("Cancel", key="cancel_logout"):
             st.session_state["show_logout_confirm"] = False
             st.rerun()
 
@@ -122,6 +122,28 @@ if st.sidebar.button("Reset to Original Data"):
     categorical_cols = df.select_dtypes(exclude=['number', 'datetime']).columns.tolist()
     date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
     st.rerun()
+
+# Identify column types
+numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
+categorical_cols = df.select_dtypes(exclude=['number', 'datetime']).columns.tolist()
+date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
+
+# -----------------------------
+# DATA OVERVIEW
+# -----------------------------
+st.markdown("Dataset Overview")
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Rows", f"{df.shape[0]:,}")
+col2.metric("Columns", f"{df.shape[1]:,}")
+col3.metric("Numeric Columns", len(numeric_cols))
+col4.metric("Categorical Columns", len(categorical_cols))
+
+with st.expander("Preview Dataset Head"):
+    st.dataframe(df.head(), use_container_width=True)
+
+with st.expander("Descriptive Statistics"):
+    st.dataframe(df.describe(include='all'), use_container_width=True)
 
 # -----------------------------
 # DATA CLEANING & CONVERSION
@@ -199,30 +221,8 @@ with st.expander("Feature Type Conversion"):
         except Exception as e:
             st.error(f"Conversion failed: {e}")
 
-# Identify column types
-numeric_cols = df.select_dtypes(include=['number']).columns.tolist()
-categorical_cols = df.select_dtypes(exclude=['number', 'datetime']).columns.tolist()
-date_cols = df.select_dtypes(include=['datetime']).columns.tolist()
-
 # -----------------------------
-# DATA OVERVIEW
-# -----------------------------
-st.markdown("Dataset Overview")
-
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Rows", f"{df.shape[0]:,}")
-col2.metric("Columns", f"{df.shape[1]:,}")
-col3.metric("Numeric Columns", len(numeric_cols))
-col4.metric("Categorical Columns", len(categorical_cols))
-
-with st.expander("Preview Dataset Head"):
-    st.dataframe(df.head(), use_container_width=True)
-
-with st.expander("Descriptive Statistics"):
-    st.dataframe(df.describe(include='all'), use_container_width=True)
-
-# -----------------------------
-# AUTO INSIGHTS GENERATION
+# AUTO ANALYSIS GENERATION
 # -----------------------------
 with st.expander("Feature Descriptions"):
     if st.button("Generate Insights"):
@@ -250,7 +250,7 @@ with st.expander("Feature Descriptions"):
                 st.info("No insights could be generated — please check your data types.")
 
 # -----------------------------
-# VISUAL EXPLORATION
+# VISUALS
 # -----------------------------
 with st.expander("Visual Explorations"):
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Numeric", "Categorical", "Time Series", "Correlations", "Heatmaps", "Statistical Tests"])
@@ -306,7 +306,6 @@ with st.expander("Visual Explorations"):
             fig.update_layout(width=700, height=500)
             st.plotly_chart(fig, use_container_width=True)
             
-            # Show strongest correlations
             st.subheader("🎯 Strongest Correlations")
             corr_pairs = []
             for i in range(len(corr.columns)):
@@ -325,7 +324,7 @@ with st.expander("Visual Explorations"):
             st.info("Not enough numeric columns for correlation heatmap.")
 
     with tab5:
-        st.subheader("🔥 Advanced Heatmap Visualizations")
+        st.subheader("Heatmap Visualizations")
         
         heatmap_type = st.selectbox("Select Heatmap Type:", [
             "Correlation Matrix",
