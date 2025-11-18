@@ -29,7 +29,7 @@ username = st.session_state["username"]
 # -----------------------------
 st.set_page_config(page_title="Smart Auto EDA Dashboard", layout="wide")
 
-st.title("PACT DATA EDA Dashboard")
+st.title("Your PACT Data EDA Dashboard")
 
 # -----------------------------
 # SIDEBAR USER INFO AND DROPDOWN
